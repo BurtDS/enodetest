@@ -218,7 +218,7 @@
                         </div>
                     @endif
 
-                    @if($vehicle->charge_state_updated_at)
+                    @if($vehicle->charge_state_updated_at && $vehicle->charge_state_updated_at instanceof \Carbon\Carbon)
                         <div class="flex flex-col">
                             <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Charge State Updated</span>
                             <span class="text-base font-semibold text-gray-900 dark:text-white">{{ $vehicle->charge_state_updated_at->diffForHumans() }}</span>
@@ -245,7 +245,7 @@
             </div>
             <div class="p-6">
                 <div class="grid gap-4 md:grid-cols-3">
-                    @if($vehicle->smart_charging_deadline)
+                    @if($vehicle->smart_charging_deadline && $vehicle->smart_charging_deadline instanceof \Carbon\Carbon)
                         <div class="flex flex-col">
                             <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Deadline</span>
                             <span class="text-base font-semibold text-gray-900 dark:text-white">
@@ -299,7 +299,7 @@
                     </div>
                 @endif
 
-                @if($vehicle->last_seen)
+                @if($vehicle->last_seen && $vehicle->last_seen instanceof \Carbon\Carbon)
                     <div class="flex flex-col">
                         <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Last Seen</span>
                         <span class="text-base font-semibold text-gray-900 dark:text-white">{{ $vehicle->last_seen->diffForHumans() }}</span>
@@ -327,7 +327,7 @@
                         <a href="https://www.google.com/maps?q={{ $vehicle->latitude }},{{ $vehicle->longitude }}" target="_blank" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
                             View on Map
                         </a>
-                        @if($vehicle->location_updated_at)
+                        @if($vehicle->location_updated_at && $vehicle->location_updated_at instanceof \Carbon\Carbon)
                             <span class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 Updated {{ $vehicle->location_updated_at->diffForHumans() }}
                             </span>
@@ -339,7 +339,7 @@
     </div>
 
     {{-- Capabilities --}}
-    @if($vehicle->capabilities && count($vehicle->capabilities) > 0)
+    @if($vehicle->capabilities && is_array($vehicle->capabilities) && count($vehicle->capabilities) > 0)
         <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 overflow-hidden">
             <div class="p-6 border-b border-neutral-200 dark:border-neutral-700">
                 <div class="flex items-center gap-2">
@@ -354,7 +354,7 @@
                 <div class="flex flex-wrap gap-2">
                     @foreach($vehicle->capabilities as $capability)
                         <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
-                            {{ ucfirst(str_replace('_', ' ', $capability)) }}
+                            {{ is_string($capability) ? ucfirst(str_replace('_', ' ', $capability)) : $capability }}
                         </span>
                     @endforeach
                 </div>
@@ -408,7 +408,7 @@
             <div class="mb-4">
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white">Current Location</h3>
                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                    @if($vehicle->location_updated_at)
+                    @if($vehicle->location_updated_at && $vehicle->location_updated_at instanceof \Carbon\Carbon)
                         Updated {{ $vehicle->location_updated_at->diffForHumans() }}
                     @endif
                 </p>
@@ -423,7 +423,7 @@
     @endif
 
     {{-- Last Update Info --}}
-    @if($vehicle->data_updated_at)
+    @if($vehicle->data_updated_at && $vehicle->data_updated_at instanceof \Carbon\Carbon)
         <div class="text-center text-sm text-gray-500 dark:text-gray-400">
             Last synced {{ $vehicle->data_updated_at->diffForHumans() }}
         </div>
