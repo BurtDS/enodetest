@@ -10,6 +10,7 @@ class AllVehicles extends Component
 {
     public $vehicles = [];
     public $users = [];
+    public $vehicleLocations = [];
 
     public function mount()
     {
@@ -32,6 +33,26 @@ class AllVehicles extends Component
         $this->users = User::whereHas('vehicles')
             ->withCount('vehicles')
             ->get();
+
+        // Prepare vehicle locations for map
+        $this->vehicleLocations = $this->vehicles
+            ->filter(function($vehicle) {
+                return $vehicle->latitude && $vehicle->longitude && $vehicle->user;
+            })
+            ->map(function($vehicle) {
+                return [
+                    'id' => $vehicle->id,
+                    'make' => $vehicle->make,
+                    'model' => $vehicle->model,
+                    'year' => $vehicle->year,
+                    'latitude' => $vehicle->latitude,
+                    'longitude' => $vehicle->longitude,
+                    'battery_level' => $vehicle->battery_level,
+                    'charging_status' => $vehicle->charging_status,
+                    'owner' => $vehicle->user->name,
+                ];
+            })
+            ->values();
     }
 
     public function render()
