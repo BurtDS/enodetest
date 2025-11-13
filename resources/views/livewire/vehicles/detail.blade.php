@@ -55,7 +55,37 @@
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
                 {{ $vehicle->charging_status === 'charging' ? '⚡ Charging' : 'Not charging' }}
             </p>
+            @if($vehicle->previous_battery_level && $vehicle->previous_battery_level != $vehicle->battery_level)
+                @php
+                    $batteryDiff = $vehicle->battery_level - $vehicle->previous_battery_level;
+                @endphp
+                <p class="text-xs {{ $batteryDiff > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }} mt-1">
+                    {{ $batteryDiff > 0 ? '+' : '' }}{{ number_format($batteryDiff, 1) }}% from last update
+                </p>
+            @endif
         </div>
+
+        {{-- Range --}}
+        @if($vehicle->range !== null)
+            <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Range</span>
+                    <svg class="w-5 h-5 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ number_format($vehicle->range, 0) }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $vehicle->range_unit }}</p>
+                @if($vehicle->previous_range && $vehicle->previous_range != $vehicle->range)
+                    @php
+                        $rangeDiff = $vehicle->range - $vehicle->previous_range;
+                    @endphp
+                    <p class="text-xs {{ $rangeDiff > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }} mt-1">
+                        {{ $rangeDiff > 0 ? '+' : '' }}{{ number_format($rangeDiff, 0) }} {{ $vehicle->range_unit }} from last update
+                    </p>
+                @endif
+            </div>
+        @endif
 
         {{-- Odometer --}}
         <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6">
@@ -67,6 +97,14 @@
             </div>
             <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ number_format($vehicle->odometer ?? 0, 0) }}</p>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $vehicle->odometer_unit ?? 'km' }}</p>
+            @if($vehicle->previous_odometer && $vehicle->previous_odometer < $vehicle->odometer)
+                @php
+                    $odometerDiff = $vehicle->odometer - $vehicle->previous_odometer;
+                @endphp
+                <p class="text-xs text-green-600 dark:text-green-400 mt-1">
+                    +{{ number_format($odometerDiff, 0) }} {{ $vehicle->odometer_unit ?? 'km' }} from last update
+                </p>
+            @endif
         </div>
 
         {{-- Battery Capacity --}}
@@ -74,7 +112,7 @@
             <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6">
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Battery Capacity</span>
-                    <svg class="w-5 h-5 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
                         <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
                     </svg>
@@ -83,27 +121,246 @@
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">kWh</p>
             </div>
         @endif
-
-        {{-- Location --}}
-        @if($vehicle->latitude && $vehicle->longitude)
-            <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Location</span>
-                    <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
-                    </svg>
-                </div>
-                <a href="https://www.google.com/maps?q={{ $vehicle->latitude }},{{ $vehicle->longitude }}" target="_blank" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
-                    View on Map
-                </a>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    @if($vehicle->location_updated_at)
-                        {{ $vehicle->location_updated_at->diffForHumans() }}
-                    @endif
-                </p>
-            </div>
-        @endif
     </div>
+
+    {{-- Charging Details --}}
+    @if($vehicle->charging_status === 'charging' || $vehicle->is_plugged_in)
+        <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 overflow-hidden">
+            <div class="p-6 border-b border-neutral-200 dark:border-neutral-700">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M11 3a1 1 0 10-2 0v5.5a.5.5 0 01-1 0V5a1 1 0 10-2 0v3.5a.5.5 0 01-1 0V3a1 1 0 10-2 0v8a7 7 0 1014 0V3a1 1 0 10-2 0v5.5a.5.5 0 01-1 0V8a1 1 0 10-2 0v.5a.5.5 0 01-1 0V3z"/>
+                    </svg>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Charging Details</h3>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="grid gap-4 md:grid-cols-3">
+                    <div class="flex flex-col">
+                        <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Status</span>
+                        <div class="flex items-center gap-2">
+                            @if($vehicle->charging_status === 'charging')
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                    <span class="w-2 h-2 bg-green-500 rounded-full mr-1.5 animate-pulse"></span>
+                                    Charging
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
+                                    Not Charging
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
+                    @if($vehicle->is_plugged_in !== null)
+                        <div class="flex flex-col">
+                            <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Plugged In</span>
+                            <span class="text-base font-semibold text-gray-900 dark:text-white">
+                                {{ $vehicle->is_plugged_in ? 'Yes' : 'No' }}
+                            </span>
+                        </div>
+                    @endif
+
+                    @if($vehicle->charge_rate)
+                        <div class="flex flex-col">
+                            <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Charge Rate</span>
+                            <span class="text-base font-semibold text-gray-900 dark:text-white">{{ number_format($vehicle->charge_rate, 1) }} kW</span>
+                        </div>
+                    @endif
+
+                    @if($vehicle->charge_time_remaining)
+                        <div class="flex flex-col">
+                            <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Time Remaining</span>
+                            <span class="text-base font-semibold text-gray-900 dark:text-white">
+                                @php
+                                    $hours = floor($vehicle->charge_time_remaining / 60);
+                                    $minutes = $vehicle->charge_time_remaining % 60;
+                                @endphp
+                                {{ $hours > 0 ? $hours . 'h ' : '' }}{{ $minutes }}m
+                            </span>
+                        </div>
+                    @endif
+
+                    @if($vehicle->is_fully_charged !== null)
+                        <div class="flex flex-col">
+                            <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Fully Charged</span>
+                            <span class="text-base font-semibold text-gray-900 dark:text-white">
+                                {{ $vehicle->is_fully_charged ? 'Yes' : 'No' }}
+                            </span>
+                        </div>
+                    @endif
+
+                    @if($vehicle->charge_limit)
+                        <div class="flex flex-col">
+                            <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Charge Limit</span>
+                            <span class="text-base font-semibold text-gray-900 dark:text-white">{{ $vehicle->charge_limit }}%</span>
+                        </div>
+                    @endif
+
+                    @if($vehicle->power_delivery_state)
+                        <div class="flex flex-col">
+                            <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Power Delivery State</span>
+                            <span class="text-base font-semibold text-gray-900 dark:text-white">{{ ucfirst($vehicle->power_delivery_state) }}</span>
+                        </div>
+                    @endif
+
+                    @if($vehicle->max_current)
+                        <div class="flex flex-col">
+                            <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Max Current</span>
+                            <span class="text-base font-semibold text-gray-900 dark:text-white">{{ $vehicle->max_current }} A</span>
+                        </div>
+                    @endif
+
+                    @if($vehicle->plugged_in_charger_id)
+                        <div class="flex flex-col">
+                            <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Charger ID</span>
+                            <span class="text-base font-semibold text-gray-900 dark:text-white">{{ $vehicle->plugged_in_charger_id }}</span>
+                        </div>
+                    @endif
+
+                    @if($vehicle->charge_state_updated_at)
+                        <div class="flex flex-col">
+                            <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Charge State Updated</span>
+                            <span class="text-base font-semibold text-gray-900 dark:text-white">{{ $vehicle->charge_state_updated_at->diffForHumans() }}</span>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Smart Charging --}}
+    @if($vehicle->smart_charging_enabled)
+        <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 overflow-hidden">
+            <div class="p-6 border-b border-neutral-200 dark:border-neutral-700">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M11 3a1 1 0 10-2 0v5.5a.5.5 0 01-1 0V5a1 1 0 10-2 0v3.5a.5.5 0 01-1 0V3a1 1 0 10-2 0v8a7 7 0 1014 0V3a1 1 0 10-2 0v5.5a.5.5 0 01-1 0V8a1 1 0 10-2 0v.5a.5.5 0 01-1 0V3z"/>
+                    </svg>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Smart Charging</h3>
+                    <span class="ml-auto inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                        Active
+                    </span>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="grid gap-4 md:grid-cols-3">
+                    @if($vehicle->smart_charging_deadline)
+                        <div class="flex flex-col">
+                            <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Deadline</span>
+                            <span class="text-base font-semibold text-gray-900 dark:text-white">
+                                {{ $vehicle->smart_charging_deadline->format('M d, Y g:i A') }}
+                            </span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                {{ $vehicle->smart_charging_deadline->diffForHumans() }}
+                            </span>
+                        </div>
+                    @endif
+
+                    @if($vehicle->smart_charging_minimum_charge_limit)
+                        <div class="flex flex-col">
+                            <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Minimum Charge Limit</span>
+                            <span class="text-base font-semibold text-gray-900 dark:text-white">{{ $vehicle->smart_charging_minimum_charge_limit }}%</span>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Vehicle Status & Connectivity --}}
+    <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 overflow-hidden">
+        <div class="p-6 border-b border-neutral-200 dark:border-neutral-700">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">Vehicle Status</h3>
+            </div>
+        </div>
+        <div class="p-6">
+            <div class="grid gap-4 md:grid-cols-3">
+                @if($vehicle->is_reachable !== null)
+                    <div class="flex flex-col">
+                        <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Reachable</span>
+                        <div class="flex items-center gap-2">
+                            @if($vehicle->is_reachable)
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                    <span class="w-2 h-2 bg-green-500 rounded-full mr-1.5"></span>
+                                    Online
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                    <span class="w-2 h-2 bg-red-500 rounded-full mr-1.5"></span>
+                                    Offline
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+
+                @if($vehicle->last_seen)
+                    <div class="flex flex-col">
+                        <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Last Seen</span>
+                        <span class="text-base font-semibold text-gray-900 dark:text-white">{{ $vehicle->last_seen->diffForHumans() }}</span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $vehicle->last_seen->format('M d, Y g:i A') }}</span>
+                    </div>
+                @endif
+
+                @if($vehicle->display_name)
+                    <div class="flex flex-col">
+                        <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Display Name</span>
+                        <span class="text-base font-semibold text-gray-900 dark:text-white">{{ $vehicle->display_name }}</span>
+                    </div>
+                @endif
+
+                @if($vehicle->vin)
+                    <div class="flex flex-col">
+                        <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">VIN</span>
+                        <span class="text-base font-mono text-gray-900 dark:text-white">{{ $vehicle->vin }}</span>
+                    </div>
+                @endif
+
+                @if($vehicle->latitude && $vehicle->longitude)
+                    <div class="flex flex-col">
+                        <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Location</span>
+                        <a href="https://www.google.com/maps?q={{ $vehicle->latitude }},{{ $vehicle->longitude }}" target="_blank" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                            View on Map
+                        </a>
+                        @if($vehicle->location_updated_at)
+                            <span class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Updated {{ $vehicle->location_updated_at->diffForHumans() }}
+                            </span>
+                        @endif
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    {{-- Capabilities --}}
+    @if($vehicle->capabilities && count($vehicle->capabilities) > 0)
+        <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 overflow-hidden">
+            <div class="p-6 border-b border-neutral-200 dark:border-neutral-700">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                        <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+                    </svg>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Vehicle Capabilities</h3>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="flex flex-wrap gap-2">
+                    @foreach($vehicle->capabilities as $capability)
+                        <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
+                            {{ ucfirst(str_replace('_', ' ', $capability)) }}
+                        </span>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    @endif
 
     {{-- Monthly Statistics --}}
     @if(count($statistics['monthly_data'] ?? []) > 0)

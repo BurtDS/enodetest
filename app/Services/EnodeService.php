@@ -302,6 +302,8 @@ class EnodeService
         $chargeState = $vehicleData['chargeState'] ?? [];
         $location = $vehicleData['location'] ?? [];
         $odometer = $vehicleData['odometer'] ?? [];
+        $smartCharging = $vehicleData['smartChargingPolicy'] ?? [];
+        $capabilities = $vehicleData['capabilities'] ?? [];
 
         // Log if location data is missing
         if (empty($location['latitude']) || empty($location['longitude'])) {
@@ -315,6 +317,7 @@ class EnodeService
         }
 
         $newBatteryLevel = $chargeState['batteryLevel'] ?? null;
+        $newRange = $chargeState['range'] ?? null;
         $newOdometer = $odometer['distance'] ?? null;
         $newChargingStatus = ($chargeState['isCharging'] ?? false) ? 'charging' : 'not_charging';
 
@@ -323,24 +326,60 @@ class EnodeService
 
         // Update vehicle with all data
         $vehicle->update([
+            // Root level data
             'vendor' => $vehicleData['vendor'] ?? null,
+            'is_reachable' => $vehicleData['isReachable'] ?? null,
+            'last_seen' => isset($vehicleData['lastSeen']) ? now()->parse($vehicleData['lastSeen']) : null,
+
+            // Information
             'make' => $information['brand'] ?? null,
             'model' => $information['model'] ?? null,
             'year' => $information['year'] ?? null,
             'vin' => $information['vin'] ?? null,
+            'display_name' => $information['displayName'] ?? null,
+
+            // Battery and charge state
             'previous_battery_level' => $vehicle->battery_level,
             'battery_level' => $newBatteryLevel,
             'battery_capacity' => $chargeState['batteryCapacity'] ?? null,
+            'previous_range' => $vehicle->range,
+            'range' => $newRange,
+            'range_unit' => 'km',
+
+            // Charging status and details
             'previous_charging_status' => $vehicle->charging_status,
             'charging_status' => $newChargingStatus,
+            'charge_rate' => $chargeState['chargeRate'] ?? null,
+            'charge_time_remaining' => $chargeState['chargeTimeRemaining'] ?? null,
+            'is_fully_charged' => $chargeState['isFullyCharged'] ?? null,
+            'is_plugged_in' => $chargeState['isPluggedIn'] ?? null,
+            'charge_limit' => $chargeState['chargeLimit'] ?? null,
+            'power_delivery_state' => $chargeState['powerDeliveryState'] ?? null,
+            'max_current' => $chargeState['maxCurrent'] ?? null,
+            'plugged_in_charger_id' => $chargeState['pluggedInChargerId'] ?? null,
+            'charge_state_updated_at' => isset($chargeState['lastUpdated']) ? now()->parse($chargeState['lastUpdated']) : null,
+
+            // Smart charging policy
+            'smart_charging_enabled' => $smartCharging['isEnabled'] ?? false,
+            'smart_charging_deadline' => isset($smartCharging['deadline']) ? now()->parse($smartCharging['deadline']) : null,
+            'smart_charging_minimum_charge_limit' => $smartCharging['minimumChargeLimit'] ?? null,
+
+            // Capabilities (store as JSON)
+            'capabilities' => $capabilities,
+
+            // Location
             'previous_latitude' => $vehicle->latitude,
             'previous_longitude' => $vehicle->longitude,
             'latitude' => $location['latitude'] ?? null,
             'longitude' => $location['longitude'] ?? null,
             'location_updated_at' => isset($location['lastUpdated']) ? now()->parse($location['lastUpdated']) : null,
+
+            // Odometer
             'previous_odometer' => $vehicle->odometer,
             'odometer' => $newOdometer,
             'odometer_unit' => 'km',
+
+            // Sync timestamp
             'data_updated_at' => now(),
         ]);
 

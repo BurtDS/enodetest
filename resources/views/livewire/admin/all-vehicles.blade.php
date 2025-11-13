@@ -21,6 +21,7 @@
                         <th class="text-left py-4 px-6 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Vehicle</th>
                         <th class="text-left py-4 px-6 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Owner</th>
                         <th class="text-left py-4 px-6 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">State of Charge</th>
+                        <th class="text-right py-4 px-6 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Range</th>
                         <th class="text-right py-4 px-6 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Odometer</th>
                         <th class="text-center py-4 px-6 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Status</th>
                         <th class="text-center py-4 px-6 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Last Updated</th>
@@ -96,6 +97,36 @@
                                 @endif
                             </td>
 
+                            {{-- Range --}}
+                            <td class="py-4 px-6">
+                                @if($vehicle->range !== null)
+                                    <div class="text-right">
+                                        <div class="flex items-center justify-end gap-2">
+                                            <svg class="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
+                                            </svg>
+                                            <span class="text-sm font-bold text-gray-900 dark:text-white">
+                                                {{ number_format($vehicle->range, 0) }}
+                                            </span>
+                                        </div>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">{{ $vehicle->range_unit }}</span>
+                                        @if($vehicle->previous_range && $vehicle->previous_range != $vehicle->range)
+                                            @php
+                                                $rangeDiff = $vehicle->range - $vehicle->previous_range;
+                                                $diffColor = $rangeDiff > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
+                                            @endphp
+                                            <div class="text-xs {{ $diffColor }} mt-1">
+                                                {{ $rangeDiff > 0 ? '+' : '' }}{{ number_format($rangeDiff, 0) }} {{ $vehicle->range_unit }}
+                                            </div>
+                                        @endif
+                                    </div>
+                                @else
+                                    <div class="text-right">
+                                        <span class="text-sm text-gray-400 dark:text-gray-500">N/A</span>
+                                    </div>
+                                @endif
+                            </td>
+
                             {{-- Odometer with Visualization --}}
                             <td class="py-4 px-6">
                                 @if($vehicle->odometer !== null)
@@ -125,18 +156,48 @@
 
                             {{-- Status --}}
                             <td class="py-4 px-6">
-                                <div class="flex justify-center">
+                                <div class="flex flex-col items-center gap-1.5">
+                                    {{-- Main Status --}}
                                     @if($vehicle->charging_status === 'charging')
                                         <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                                             <span class="w-2 h-2 bg-green-500 rounded-full mr-1.5 animate-pulse"></span>
                                             Charging
                                         </span>
+                                        @if($vehicle->charge_rate)
+                                            <span class="text-xs text-gray-600 dark:text-gray-400">{{ number_format($vehicle->charge_rate, 1) }} kW</span>
+                                        @endif
                                     @else
                                         <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
                                             <span class="w-2 h-2 bg-gray-400 rounded-full mr-1.5"></span>
                                             Idle
                                         </span>
                                     @endif
+
+                                    {{-- Additional Status Indicators --}}
+                                    <div class="flex gap-1 items-center">
+                                        @if($vehicle->is_plugged_in)
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200" title="Plugged In">
+                                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                                                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                                                </svg>
+                                            </span>
+                                        @endif
+                                        @if($vehicle->smart_charging_enabled)
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200" title="Smart Charging Active">
+                                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M11 3a1 1 0 10-2 0v5.5a.5.5 0 01-1 0V5a1 1 0 10-2 0v3.5a.5.5 0 01-1 0V3a1 1 0 10-2 0v8a7 7 0 1014 0V3a1 1 0 10-2 0v5.5a.5.5 0 01-1 0V8a1 1 0 10-2 0v.5a.5.5 0 01-1 0V3z"/>
+                                                </svg>
+                                            </span>
+                                        @endif
+                                        @if(!$vehicle->is_reachable)
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200" title="Unreachable">
+                                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd"/>
+                                                </svg>
+                                            </span>
+                                        @endif
+                                    </div>
                                 </div>
                             </td>
 
@@ -170,7 +231,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="py-12 text-center">
+                            <td colspan="8" class="py-12 text-center">
                                 <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                                 </svg>
