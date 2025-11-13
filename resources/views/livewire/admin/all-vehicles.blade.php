@@ -1,3 +1,8 @@
+{{-- Leaflet CSS --}}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+{{-- Leaflet JS --}}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
 <div class="flex h-full w-full flex-1 flex-col gap-6">
     {{-- Header --}}
     <div class="flex items-center justify-between">
@@ -23,6 +28,7 @@
                         <th class="text-left py-4 px-6 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">State of Charge</th>
                         <th class="text-right py-4 px-6 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Odometer</th>
                         <th class="text-center py-4 px-6 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                        <th class="text-center py-4 px-6 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Location</th>
                         <th class="text-center py-4 px-6 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Last Updated</th>
                         <th class="text-center py-4 px-6 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -140,6 +146,30 @@
                                 </div>
                             </td>
 
+                            {{-- Location --}}
+                            <td class="py-4 px-6">
+                                <div class="flex justify-center">
+                                    @if($vehicle->latitude && $vehicle->longitude)
+                                        <div class="flex flex-col items-center gap-2">
+                                            <div id="map-{{ $vehicle->id }}" class="w-32 h-24 rounded-lg border-2 border-gray-200 dark:border-gray-700 overflow-hidden"
+                                                data-lat="{{ $vehicle->latitude }}"
+                                                data-lng="{{ $vehicle->longitude }}">
+                                            </div>
+                                            <a href="https://www.google.com/maps?q={{ $vehicle->latitude }},{{ $vehicle->longitude }}"
+                                               target="_blank"
+                                               class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                                </svg>
+                                                Open in Maps
+                                            </a>
+                                        </div>
+                                    @else
+                                        <span class="text-sm text-gray-400 dark:text-gray-500">N/A</span>
+                                    @endif
+                                </div>
+                            </td>
+
                             {{-- Last Updated --}}
                             <td class="py-4 px-6 text-center">
                                 @if($vehicle->data_updated_at)
@@ -170,7 +200,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="py-12 text-center">
+                            <td colspan="8" class="py-12 text-center">
                                 <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                                 </svg>
@@ -235,4 +265,192 @@
             <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ count($users) }}</p>
         </div>
     </div>
+
+    {{-- Overview Map --}}
+    <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 overflow-hidden">
+        <div class="p-6 border-b border-neutral-200 dark:border-neutral-700">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Vehicle Locations Overview</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Map showing all vehicle locations in real-time</p>
+        </div>
+        <div id="overview-map" class="w-full h-[600px]"></div>
+    </div>
 </div>
+
+{{-- Initialize Leaflet Maps --}}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize mini maps for each vehicle
+        const mapContainers = document.querySelectorAll('[id^="map-"]');
+
+        mapContainers.forEach(function(container) {
+            const lat = parseFloat(container.getAttribute('data-lat'));
+            const lng = parseFloat(container.getAttribute('data-lng'));
+
+            if (lat && lng) {
+                // Initialize the map
+                const map = L.map(container, {
+                    center: [lat, lng],
+                    zoom: 13,
+                    zoomControl: false,
+                    scrollWheelZoom: false,
+                    dragging: false,
+                    doubleClickZoom: false,
+                    touchZoom: false,
+                    attributionControl: false
+                });
+
+                // Add OpenStreetMap tile layer
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19
+                }).addTo(map);
+
+                // Add a marker with a custom icon
+                const carIcon = L.divIcon({
+                    className: 'custom-car-marker',
+                    html: '<svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>',
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                });
+
+                L.marker([lat, lng], { icon: carIcon }).addTo(map);
+            }
+        });
+
+        // Initialize overview map with all vehicles
+        const overviewMapElement = document.getElementById('overview-map');
+        if (overviewMapElement) {
+            const overviewMap = L.map('overview-map', {
+                center: [50.8503, 4.3517], // Default center (Brussels)
+                zoom: 6,
+                zoomControl: true,
+                scrollWheelZoom: true
+            });
+
+            // Add OpenStreetMap tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(overviewMap);
+
+            // Collect all vehicle locations
+            const vehicles = @json($vehicles->map(function($vehicle) {
+                return [
+                    'id' => $vehicle->id,
+                    'make' => $vehicle->make,
+                    'model' => $vehicle->model,
+                    'year' => $vehicle->year,
+                    'latitude' => $vehicle->latitude,
+                    'longitude' => $vehicle->longitude,
+                    'battery_level' => $vehicle->battery_level,
+                    'charging_status' => $vehicle->charging_status,
+                    'owner' => $vehicle->user->name,
+                    'odometer' => $vehicle->odometer,
+                    'odometer_unit' => $vehicle->odometer_unit ?? 'km',
+                ];
+            })->filter(function($vehicle) {
+                return $vehicle['latitude'] && $vehicle['longitude'];
+            })->values());
+
+            const bounds = [];
+
+            // Add markers for each vehicle
+            vehicles.forEach(function(vehicle) {
+                const lat = parseFloat(vehicle.latitude);
+                const lng = parseFloat(vehicle.longitude);
+
+                if (lat && lng) {
+                    bounds.push([lat, lng]);
+
+                    // Determine marker color based on charging status
+                    const markerColor = vehicle.charging_status === 'charging' ? 'text-green-600' : 'text-blue-600';
+
+                    // Create custom icon
+                    const carIcon = L.divIcon({
+                        className: 'custom-car-marker-overview',
+                        html: `<svg class="w-8 h-8 ${markerColor}" fill="currentColor" viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>`,
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 16]
+                    });
+
+                    // Create popup content
+                    const batteryBar = vehicle.battery_level
+                        ? `<div class="mt-2">
+                               <div class="text-xs text-gray-600 mb-1">Battery: ${Math.round(vehicle.battery_level)}%</div>
+                               <div class="w-full bg-gray-200 rounded-full h-2">
+                                   <div class="bg-blue-500 h-2 rounded-full" style="width: ${vehicle.battery_level}%"></div>
+                               </div>
+                           </div>`
+                        : '';
+
+                    const odometerInfo = vehicle.odometer
+                        ? `<div class="text-xs text-gray-600 mt-1">📍 ${vehicle.odometer.toLocaleString()} ${vehicle.odometer_unit}</div>`
+                        : '';
+
+                    const chargingBadge = vehicle.charging_status === 'charging'
+                        ? '<span class="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-800 mt-1">⚡ Charging</span>'
+                        : '<span class="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-800 mt-1">Idle</span>';
+
+                    const popupContent = `
+                        <div class="p-2 min-w-[200px]">
+                            <div class="font-bold text-base">${vehicle.make} ${vehicle.model}</div>
+                            ${vehicle.year ? `<div class="text-xs text-gray-500">${vehicle.year}</div>` : ''}
+                            <div class="text-sm text-gray-700 mt-1">Owner: ${vehicle.owner}</div>
+                            ${batteryBar}
+                            ${odometerInfo}
+                            ${chargingBadge}
+                        </div>
+                    `;
+
+                    // Add marker to map
+                    L.marker([lat, lng], { icon: carIcon })
+                        .bindPopup(popupContent)
+                        .addTo(overviewMap);
+                }
+            });
+
+            // Fit bounds to show all markers
+            if (bounds.length > 0) {
+                overviewMap.fitBounds(bounds, { padding: [50, 50] });
+            }
+        }
+    });
+</script>
+
+<style>
+    .custom-car-marker {
+        background: white;
+        border-radius: 50%;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .custom-car-marker-overview {
+        background: white;
+        border-radius: 50%;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        padding: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+
+    .custom-car-marker-overview:hover {
+        transform: scale(1.15);
+    }
+
+    /* Leaflet popup styling */
+    .leaflet-popup-content-wrapper {
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .leaflet-popup-content {
+        margin: 0;
+        min-width: 200px;
+    }
+</style>
