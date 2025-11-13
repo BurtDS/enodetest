@@ -15,64 +15,50 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table class="w-full min-w-max">
+            <table class="w-full">
                 <thead class="bg-gray-50 dark:bg-neutral-900">
                     <tr class="border-b border-neutral-200 dark:border-neutral-700">
-                        <th class="text-left py-4 px-6 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[200px]">Vehicle</th>
-                        <th class="text-left py-4 px-6 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[180px]">Owner</th>
-                        <th class="text-left py-4 px-6 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[160px]">State of Charge</th>
-                        <th class="text-right py-4 px-6 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[120px]">Range</th>
-                        <th class="text-right py-4 px-6 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[120px]">Odometer</th>
-                        <th class="text-center py-4 px-6 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[140px]">Status</th>
-                        <th class="text-center py-4 px-6 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[140px]">Last Updated</th>
-                        <th class="text-center py-4 px-6 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[140px]">Actions</th>
+                        <th class="text-left py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Vehicle & Owner</th>
+                        <th class="text-left py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Battery & Range</th>
+                        <th class="text-right py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Odometer</th>
+                        <th class="text-left py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                        <th class="text-center py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
                     @forelse($vehicles as $vehicle)
                         <tr class="hover:bg-gray-50 dark:hover:bg-neutral-900/50 transition-colors">
-                            {{-- Vehicle Info --}}
-                            <td class="py-4 px-6">
-                                <div class="flex items-center gap-3">
-                                    <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
+                            {{-- Vehicle & Owner --}}
+                            <td class="py-3 px-4">
+                                <div class="flex flex-col gap-1">
+                                    <div class="flex items-center gap-2">
                                         <p class="font-semibold text-gray-900 dark:text-white">{{ $vehicle->make }} {{ $vehicle->model }}</p>
-                                        <div class="flex items-center gap-2 mt-1">
-                                            @if($vehicle->year)
-                                                <span class="text-xs text-gray-500 dark:text-gray-400">{{ $vehicle->year }}</span>
-                                            @endif
-                                            @if($vehicle->vendor)
-                                                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                                    {{ ucfirst($vehicle->vendor) }}
-                                                </span>
-                                            @endif
-                                        </div>
+                                        @if($vehicle->year)
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">{{ $vehicle->year }}</span>
+                                        @endif
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-xs text-gray-600 dark:text-gray-400">{{ $vehicle->user->name }}</p>
+                                        @if($vehicle->vendor)
+                                            <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                {{ ucfirst($vehicle->vendor) }}
+                                            </span>
+                                        @endif
                                     </div>
                                 </div>
                             </td>
 
-                            {{-- Owner --}}
-                            <td class="py-4 px-6">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $vehicle->user->name }}</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ $vehicle->user->email }}</p>
-                                </div>
-                            </td>
-
-                            {{-- Battery Level with Visualization --}}
-                            <td class="py-4 px-6">
+                            {{-- Battery & Range --}}
+                            <td class="py-3 px-4">
                                 @if($vehicle->battery_level !== null)
-                                    <div class="flex items-center gap-3">
-                                        <div class="flex-1 min-w-[120px]">
+                                    <div class="flex flex-col gap-2">
+                                        {{-- Battery --}}
+                                        <div>
                                             <div class="flex items-center justify-between mb-1">
                                                 <span class="text-xs text-gray-600 dark:text-gray-400">Battery</span>
                                                 <span class="text-sm font-bold text-gray-900 dark:text-white">{{ number_format($vehicle->battery_level, 0) }}%</span>
                                             </div>
-                                            <div class="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700 overflow-hidden">
+                                            <div class="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
                                                 @php
                                                     $batteryColor = match(true) {
                                                         $vehicle->battery_level >= 80 => 'bg-green-500',
@@ -81,14 +67,16 @@
                                                         default => 'bg-red-500'
                                                     };
                                                 @endphp
-                                                <div class="{{ $batteryColor }} h-2 rounded-full transition-all duration-300" style="width: {{ $vehicle->battery_level }}%"></div>
+                                                <div class="{{ $batteryColor }} h-1.5 rounded-full" style="width: {{ $vehicle->battery_level }}%"></div>
                                             </div>
                                         </div>
-                                        @if($vehicle->charging_status === 'charging')
-                                            <div class="flex-shrink-0">
-                                                <svg class="w-5 h-5 text-green-500 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path d="M11 3a1 1 0 10-2 0v5.5a.5.5 0 01-1 0V5a1 1 0 10-2 0v3.5a.5.5 0 01-1 0V3a1 1 0 10-2 0v8a7 7 0 1014 0V3a1 1 0 10-2 0v5.5a.5.5 0 01-1 0V8a1 1 0 10-2 0v.5a.5.5 0 01-1 0V3z"/>
-                                                </svg>
+                                        {{-- Range --}}
+                                        @if($vehicle->range !== null)
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-xs text-gray-600 dark:text-gray-400">Range</span>
+                                                <span class="text-xs font-semibold text-gray-900 dark:text-white">
+                                                    {{ number_format($vehicle->range, 0) }} {{ $vehicle->range_unit }}
+                                                </span>
                                             </div>
                                         @endif
                                     </div>
@@ -97,57 +85,14 @@
                                 @endif
                             </td>
 
-                            {{-- Range --}}
-                            <td class="py-4 px-6">
-                                @if($vehicle->range !== null)
-                                    <div class="text-right">
-                                        <div class="flex items-center justify-end gap-2">
-                                            <svg class="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
-                                            </svg>
-                                            <span class="text-sm font-bold text-gray-900 dark:text-white">
-                                                {{ number_format($vehicle->range, 0) }}
-                                            </span>
-                                        </div>
-                                        <span class="text-xs text-gray-500 dark:text-gray-400">{{ $vehicle->range_unit }}</span>
-                                        @if($vehicle->previous_range && $vehicle->previous_range != $vehicle->range)
-                                            @php
-                                                $rangeDiff = $vehicle->range - $vehicle->previous_range;
-                                                $diffColor = $rangeDiff > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
-                                            @endphp
-                                            <div class="text-xs {{ $diffColor }} mt-1">
-                                                {{ $rangeDiff > 0 ? '+' : '' }}{{ number_format($rangeDiff, 0) }} {{ $vehicle->range_unit }}
-                                            </div>
-                                        @endif
-                                    </div>
-                                @else
-                                    <div class="text-right">
-                                        <span class="text-sm text-gray-400 dark:text-gray-500">N/A</span>
-                                    </div>
-                                @endif
-                            </td>
-
-                            {{-- Odometer with Visualization --}}
-                            <td class="py-4 px-6">
+                            {{-- Odometer --}}
+                            <td class="py-3 px-4 text-right">
                                 @if($vehicle->odometer !== null)
-                                    <div class="text-right">
-                                        <div class="flex items-center justify-end gap-2">
-                                            <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                                <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z"/>
-                                            </svg>
-                                            <span class="text-sm font-bold text-gray-900 dark:text-white">
-                                                {{ number_format($vehicle->odometer, 0) }}
-                                            </span>
-                                        </div>
+                                    <div class="flex flex-col items-end">
+                                        <span class="text-sm font-bold text-gray-900 dark:text-white">
+                                            {{ number_format($vehicle->odometer, 0) }}
+                                        </span>
                                         <span class="text-xs text-gray-500 dark:text-gray-400">{{ $vehicle->odometer_unit ?? 'km' }}</span>
-                                        @if($vehicle->previous_odometer && $vehicle->previous_odometer < $vehicle->odometer)
-                                            @php
-                                                $odometerDiff = $vehicle->odometer - $vehicle->previous_odometer;
-                                            @endphp
-                                            <div class="text-xs text-green-600 dark:text-green-400 mt-1">
-                                                +{{ number_format($odometerDiff, 0) }} {{ $vehicle->odometer_unit ?? 'km' }}
-                                            </div>
-                                        @endif
                                     </div>
                                 @else
                                     <span class="text-sm text-gray-400 dark:text-gray-500">N/A</span>
@@ -155,83 +100,61 @@
                             </td>
 
                             {{-- Status --}}
-                            <td class="py-4 px-6">
-                                <div class="flex flex-col items-center gap-1.5">
-                                    {{-- Main Status --}}
+                            <td class="py-3 px-4">
+                                <div class="flex flex-col gap-1">
+                                    {{-- Charging Status --}}
                                     @if($vehicle->charging_status === 'charging')
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                            <span class="w-2 h-2 bg-green-500 rounded-full mr-1.5 animate-pulse"></span>
-                                            Charging
-                                        </span>
-                                        @if($vehicle->charge_rate)
-                                            <span class="text-xs text-gray-600 dark:text-gray-400">{{ number_format($vehicle->charge_rate, 1) }} kW</span>
-                                        @endif
+                                        <div class="flex items-center gap-1">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                <span class="w-1.5 h-1.5 bg-green-500 rounded-full mr-1 animate-pulse"></span>
+                                                Charging
+                                            </span>
+                                            @if($vehicle->charge_rate)
+                                                <span class="text-xs text-gray-600 dark:text-gray-400">{{ number_format($vehicle->charge_rate, 1) }}kW</span>
+                                            @endif
+                                        </div>
                                     @else
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
-                                            <span class="w-2 h-2 bg-gray-400 rounded-full mr-1.5"></span>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 w-fit">
                                             Idle
                                         </span>
                                     @endif
 
-                                    {{-- Additional Status Indicators --}}
-                                    <div class="flex gap-1 items-center">
+                                    {{-- Status Badges --}}
+                                    <div class="flex flex-wrap gap-1">
                                         @if($vehicle->is_plugged_in)
-                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200" title="Plugged In">
-                                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                                                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-                                                </svg>
-                                            </span>
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200" title="Plugged In">Plugged</span>
                                         @endif
                                         @if($vehicle->smart_charging_enabled)
-                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200" title="Smart Charging Active">
-                                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path d="M11 3a1 1 0 10-2 0v5.5a.5.5 0 01-1 0V5a1 1 0 10-2 0v3.5a.5.5 0 01-1 0V3a1 1 0 10-2 0v8a7 7 0 1014 0V3a1 1 0 10-2 0v5.5a.5.5 0 01-1 0V8a1 1 0 10-2 0v.5a.5.5 0 01-1 0V3z"/>
-                                                </svg>
-                                            </span>
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200" title="Smart Charging">Smart</span>
                                         @endif
-                                        @if(!$vehicle->is_reachable)
-                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200" title="Unreachable">
-                                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd"/>
-                                                </svg>
-                                            </span>
+                                        @if($vehicle->is_reachable === false)
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200" title="Unreachable">Offline</span>
                                         @endif
                                     </div>
-                                </div>
-                            </td>
 
-                            {{-- Last Updated --}}
-                            <td class="py-4 px-6 text-center">
-                                @if($vehicle->data_updated_at)
-                                    <div class="text-xs text-gray-600 dark:text-gray-400">
-                                        <div>{{ $vehicle->data_updated_at->format('M d, Y') }}</div>
-                                        <div class="text-gray-500 dark:text-gray-500">{{ $vehicle->data_updated_at->format('g:i A') }}</div>
-                                        <div class="text-gray-500 dark:text-gray-500 mt-1">
-                                            ({{ $vehicle->data_updated_at->diffForHumans() }})
-                                        </div>
-                                    </div>
-                                @else
-                                    <span class="text-sm text-gray-400 dark:text-gray-500">Never</span>
-                                @endif
+                                    {{-- Last Updated --}}
+                                    @if($vehicle->data_updated_at)
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                                            {{ $vehicle->data_updated_at->diffForHumans() }}
+                                        </span>
+                                    @endif
+                                </div>
                             </td>
 
                             {{-- Actions --}}
-                            <td class="py-4 px-6">
-                                <div class="flex justify-center">
-                                    <a href="{{ route('vehicles.detail', $vehicle) }}" class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
-                                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                        </svg>
-                                        View Details
-                                    </a>
-                                </div>
+                            <td class="py-3 px-4 text-center">
+                                <a href="{{ route('vehicles.detail', $vehicle) }}" class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
+                                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                    View
+                                </a>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="py-12 text-center">
+                            <td colspan="5" class="py-12 text-center">
                                 <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                                 </svg>
