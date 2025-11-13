@@ -303,6 +303,17 @@ class EnodeService
         $location = $vehicleData['location'] ?? [];
         $odometer = $vehicleData['odometer'] ?? [];
 
+        // Log if location data is missing
+        if (empty($location['latitude']) || empty($location['longitude'])) {
+            Log::warning('Location data not available for vehicle', [
+                'vehicle_id' => $vehicle->id,
+                'enode_vehicle_id' => $vehicle->enode_vehicle_id,
+                'vendor' => $vehicleData['vendor'] ?? 'unknown',
+                'make' => $information['brand'] ?? 'unknown',
+                'location_data' => $location
+            ]);
+        }
+
         $newBatteryLevel = $chargeState['batteryLevel'] ?? null;
         $newOdometer = $odometer['distance'] ?? null;
         $newChargingStatus = ($chargeState['isCharging'] ?? false) ? 'charging' : 'not_charging';

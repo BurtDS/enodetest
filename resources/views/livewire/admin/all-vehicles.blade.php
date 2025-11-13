@@ -239,8 +239,20 @@
     {{-- Vehicle Locations Overview Map --}}
     <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 overflow-hidden">
         <div class="p-6 border-b border-neutral-200 dark:border-neutral-700">
-            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Vehicle Locations Overview</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Real-time map showing all vehicle locations</p>
+            <div class="flex items-start justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Vehicle Locations Overview</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Real-time map showing all vehicle locations</p>
+                </div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">
+                    <span class="font-medium">{{ count($vehicleLocations) }}</span> of <span class="font-medium">{{ count($vehicles) }}</span> vehicles with location data
+                </div>
+            </div>
+            @if(count($vehicleLocations) < count($vehicles))
+                <div class="mt-3 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-lg">
+                    Note: Some vehicle manufacturers (e.g., Peugeot) may not provide location data through their API.
+                </div>
+            @endif
         </div>
         <div id="admin-overview-map" class="w-full h-[600px]" style="height: 600px; width: 100%;" wire:ignore></div>
     </div>
