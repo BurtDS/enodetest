@@ -354,7 +354,13 @@
                 <div class="flex flex-wrap gap-2">
                     @foreach($vehicle->capabilities as $capability)
                         <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
-                            {{ is_string($capability) ? ucfirst(str_replace('_', ' ', $capability)) : $capability }}
+                            @if(is_string($capability))
+                                {{ ucfirst(str_replace('_', ' ', $capability)) }}
+                            @elseif(is_array($capability))
+                                {{ json_encode($capability) }}
+                            @else
+                                {{ (string) $capability }}
+                            @endif
                         </span>
                     @endforeach
                 </div>
